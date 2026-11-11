@@ -145,16 +145,8 @@ lemma val_map (E : Simplex C k) (f : n ⟶ n') (x : (nerve (a ⟶ b)).obj n) :
 /-- Two simplices of the simplicial nerve agreeing on all values are equal. -/
 lemma eq_of_val {E E' : Simplex C k}
     (h : ∀ (a b : Th k) (n : SimplexCategoryᵒᵖ) (x : (nerve (a ⟶ b)).obj n), val E x = val E' x) :
-    E = E' := by
-  obtain ⟨o, m, _, _⟩ := E
-  obtain ⟨o', m', _, _⟩ := E'
-  obtain rfl : o = o' :=
-    funext fun a ↦ congr_arg HSimplex.src (h a a (Opposite.op ⦋0⦌) (idS a _))
-  obtain rfl : m = m' := by
-    funext a b
-    ext n x
-    exact eq_of_heq (HSimplex.mk.inj (h a b n x)).2.2
-  rfl
+    E = E' :=
+  enrichedFunctor_ext h
 
 end Val
 
@@ -174,5 +166,13 @@ lemma val_restr_of_fix {k : ℕ} (g : ⦋k⦌ ⟶ ⦋k⦌) (E : Simplex C k) {a 
   val_congr E (congr_arg SimplicialThickening.mk (hx 0 _ (x.obj 0).left))
     (congr_arg SimplicialThickening.mk (hx 0 _ (x.obj 0).right)) _ _ fun t ↦ Set.ext fun c ↦
       ⟨fun ⟨c', hc', e⟩ ↦ e ▸ (hx t c' hc').symm ▸ hc', fun hc ↦ ⟨c, hc, hx t c hc⟩⟩
+
+/-- The simplicial nerve is functorial in simplicial functors. -/
+def map {D : Type u} [Category.{v} D] [SimplicialCategory D] (F : EnrichedFunctor SSet.{v} C D) :
+    SimplicialNerve C ⟶ SimplicialNerve D where
+  app _ := TypeCat.ofHom fun E ↦ E.comp SSet F
+  naturality _ _ f := by
+    ext E
+    exact enrichedFunctor_ext fun _ _ _ _ ↦ rfl
 
 end CategoryTheory.SimplicialNerve

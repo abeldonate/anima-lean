@@ -34,6 +34,9 @@ lemma comp_map {A B D : C} (s : (sHom A B).obj n) (t : (sHom B D).obj n) (f : n 
     (sHom A D).map f (comp s t) = comp ((sHom A B).map f s) ((sHom B D).map f t) :=
   (NatTrans.naturality_apply (eComp SSet A B D) f _).symm
 
+lemma idS_map (A : C) (f : n ⟶ n') : (sHom A A).map f (idS A n) = idS A n' :=
+  (NatTrans.naturality_apply (eId SSet A) f PUnit.unit).symm
+
 /-- A simplex of some hom-object of `C`, together with its source and target. -/
 structure HSimplex (C : Type u) [Category.{v} C] [SimplicialCategory C]
     (n : SimplexCategoryᵒᵖ) where
@@ -104,6 +107,15 @@ lemma hcomp_map (v w : HSimplex C n) (f : n ⟶ n') :
     exact (congr_arg (mk _ _) (comp_map s t f)).trans (hcomp_mk _ _).symm
   · simp_all [hcomp, dite_eq_right (show (v.map f).tgt ≠ (w.map f).src from h)]
 
+lemma mk_idS_congr {A B : C} (h : A = B) (n : SimplexCategoryᵒᵖ) :
+    (⟨A, A, idS A n⟩ : HSimplex C n) = ⟨B, B, idS B n⟩ := by
+  subst h
+  rfl
+
+lemma mk_injective {A B : C} {s t : (sHom A B).obj n}
+    (h : (⟨A, B, s⟩ : HSimplex C n) = ⟨A, B, t⟩) : s = t :=
+  eq_of_heq (mk.inj h).2.2
+
 end HSimplex
 
 /-- A morphism into `sHom A B` built from a natural `HSimplex`-valued function. -/
@@ -120,6 +132,54 @@ lemma mk_mkHom_app {X : SSet.{v}} {A B : C} (V : ∀ ⦃n⦄, X.obj n → HSimpl
     (x : X.obj n) : (⟨A, B, (mkHom V hs ht nat).app n x⟩ : HSimplex C n) = V x :=
   HSimplex.mk_get _ _ _
 
+section EnrichedFunctor
+
+variable {A : Type*} [EnrichedCategory SSet.{v} A]
+
+/-- The value of a simplicial functor on a simplex of a hom-object, with its endpoints. -/
+def hval (F : EnrichedFunctor SSet.{v} A C) {a b : A} (x : (a ⟶[SSet] b).obj n) : HSimplex C n :=
+  ⟨F.obj a, F.obj b, (F.map a b).app n x⟩
+
+/-- Two simplicial functors with the same values are equal. -/
+lemma enrichedFunctor_ext {F F' : EnrichedFunctor SSet.{v} A C}
+    (h : ∀ (a b : A) (n : SimplexCategoryᵒᵖ) (x : (a ⟶[SSet] b).obj n), hval F x = hval F' x) :
+    F = F' := by
+  obtain ⟨o, m, _, _⟩ := F
+  obtain ⟨o', m', _, _⟩ := F'
+  obtain rfl : o = o' := funext fun a ↦
+    congr_arg HSimplex.src (h a a (Opposite.op ⦋0⦌) ((eId SSet a).app _ PUnit.unit))
+  obtain rfl : m = m' := by
+    funext a b
+    ext n x
+    exact HSimplex.mk_injective (h a b n x)
+  rfl
+
+lemma hval_comp (F : EnrichedFunctor SSet.{v} A C) {a b c : A} (x : (a ⟶[SSet] b).obj n)
+    (y : (b ⟶[SSet] c).obj n) :
+    hval F ((eComp SSet a b c).app n (x, y)) = (hval F x).hcomp (hval F y) :=
+  (congr_arg (HSimplex.mk _ _) (congr_arg (fun f ↦ f.app n (x, y)) (F.map_comp a b c))).trans
+    (HSimplex.hcomp_mk _ _).symm
+
+lemma hval_id (F : EnrichedFunctor SSet.{v} A C) (a : A) (n : SimplexCategoryᵒᵖ) :
+    hval F ((eId SSet a).app n PUnit.unit) = ⟨F.obj a, F.obj a, idS (F.obj a) n⟩ :=
+  congr_arg (HSimplex.mk _ _) (congr_arg (fun f ↦ f.app n PUnit.unit) (F.map_id a))
+
+end EnrichedFunctor
+
 end HSimplex
+
+/-- The category of `n`-simplices of a simplicial category `C`: it has the objects of `C`, and its
+morphisms from `A` to `B` are the `n`-simplices of `sHom A B`. -/
+structure Level (C : Type u) (n : SimplexCategoryᵒᵖ) : Type u where
+  /-- The underlying object of `C`. -/
+  as : C
+
+instance (n : SimplexCategoryᵒᵖ) : Category.{v} (Level C n) where
+  Hom A B := (sHom A.as B.as).obj n
+  id A := idS A.as n
+  comp s t := comp s t
+  id_comp := idS_comp
+  comp_id := comp_idS
+  assoc := comp_assoc
 
 end CategoryTheory.SimplicialCategory

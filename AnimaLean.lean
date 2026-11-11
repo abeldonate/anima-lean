@@ -3,9 +3,11 @@ import AnimaLean.ForMathlib.AlgebraicTopology.SimplexCategory.Basic
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialCategory.Basic
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialCategory.KanComplex
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialCategory.LocallyKan
+import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.Adjunction
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.HollowCube
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.Quasicategory
+import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.Thickening
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialSet.AnodyneExtensions.Basic
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialSet.Horn
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialSet.Nerve
