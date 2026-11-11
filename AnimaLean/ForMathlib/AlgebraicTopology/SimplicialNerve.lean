@@ -34,22 +34,6 @@ lemma id_union (y : (nerve (a ⟶ b)).obj n) : union ((eId SSet a).app n PUnit.u
 lemma union_id (x : (nerve (a ⟶ b)).obj n) : union x ((eId SSet b).app n PUnit.unit) = x :=
   chain_ext fun t ↦ Set.union_eq_left.2 (Set.singleton_subset_iff.2 (x.obj t).right)
 
-/-- The chain of paths obtained by taking preimages under an injective monotone map. -/
-def preChain {K : Type*} [LinearOrder K] (f : J →o K) (hf : Function.Injective f)
-    {a b : SimplicialThickening K} {a' b' : J} (ha : f a' = a.as) (hb : f b' = b.as)
-    (x : (nerve (a ⟶ b)).obj n) : (nerve ((mk a' : SimplicialThickening J) ⟶ mk b')).obj n where
-  obj t :=
-    { I := f ⁻¹' (x.obj t).I
-      left := by simpa [Set.mem_preimage, ha] using (x.obj t).left
-      right := by simpa [Set.mem_preimage, hb] using (x.obj t).right
-      left_le c hc :=
-        (f.monotone.strictMono_of_injective hf).le_iff_le.1 (ha ▸ (x.obj t).left_le _ hc)
-      le_right c hc :=
-        (f.monotone.strictMono_of_injective hf).le_iff_le.1 (hb ▸ (x.obj t).le_right _ hc) }
-  map φ := ⟨⟨⟨Set.preimage_mono (x.map φ).hom.down.down⟩⟩⟩
-  map_id _ := Subsingleton.elim _ _
-  map_comp _ _ := Subsingleton.elim _ _
-
 /-- The part of `S` in `[a, b]`, together with the endpoints. -/
 def subI (S : Set J) (a b : J) : Set J := {c | (c ∈ S ∧ a ≤ c ∧ c ≤ b) ∨ c = a ∨ c = b}
 
@@ -182,20 +166,13 @@ lemma val_restr {p k : ℕ} (f : ⦋p⦌ ⟶ ⦋k⦌) (E : Simplex C k) {a b : T
     (x : (nerve (a ⟶ b)).obj n) : val (restr f E) x = val E ((thickMap f a b).app n x) :=
   rfl
 
-/-- If two `k`-simplices agree after restriction along a monomorphism `d : [p] ⟶ [k]`, then they
-have the same values on every chain of paths contained in the image of `d`. -/
-lemma val_eq_of_restr_eq {p k : ℕ} (d : ⦋p⦌ ⟶ ⦋k⦌) [Mono d] {E E' : Simplex C k}
-    (h : restr d E = restr d E') {a b : Th k} {n : SimplexCategoryᵒᵖ} (x : (nerve (a ⟶ b)).obj n)
-    (hx : ∀ t, (x.obj t).I ⊆ Set.range (uf.{v} d)) : val E x = val E' x := by
-  have hinj : Function.Injective (uf.{v} d) := by
-    have := (SimplexCategory.mono_iff_injective (f := d)).1 inferInstance
-    exact fun x y e ↦ ULift.ext _ _ (this (congr_arg ULift.down e))
-  obtain ⟨a', ha⟩ := hx 0 (x.obj 0).left
-  obtain ⟨b', hb⟩ := hx 0 (x.obj 0).right
-  let x' := preChain _ hinj ha hb x
-  have key : ∀ E₀ : Simplex C k, val E₀ x = val E₀ ((thickMap d _ _).app n x') := fun E₀ ↦
-    val_congr E₀ (by rw [ha]) (by rw [hb]) _ _ (fun t ↦
-      (Set.image_preimage_eq_of_subset (hx t)).symm)
-  rw [key E, key E', ← val_restr, ← val_restr, h]
+/-- Restricting a simplex along an endomorphism of `[k]` does not change its values on the chains
+of paths whose vertices are fixed by the endomorphism. -/
+lemma val_restr_of_fix {k : ℕ} (g : ⦋k⦌ ⟶ ⦋k⦌) (E : Simplex C k) {a b : Th k}
+    {n : SimplexCategoryᵒᵖ} (x : (nerve (a ⟶ b)).obj n)
+    (hx : ∀ t, ∀ c ∈ (x.obj t).I, uf.{v} g c = c) : val (restr g E) x = val E x :=
+  val_congr E (congr_arg SimplicialThickening.mk (hx 0 _ (x.obj 0).left))
+    (congr_arg SimplicialThickening.mk (hx 0 _ (x.obj 0).right)) _ _ fun t ↦ Set.ext fun c ↦
+      ⟨fun ⟨c', hc', e⟩ ↦ e ▸ (hx t c' hc').symm ▸ hc', fun hc ↦ ⟨c, hc, hx t c hc⟩⟩
 
 end CategoryTheory.SimplicialNerve

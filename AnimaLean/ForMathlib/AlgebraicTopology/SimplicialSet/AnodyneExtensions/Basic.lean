@@ -6,27 +6,18 @@ open CategoryTheory HomotopicalAlgebra
 
 namespace SSet.anodyneExtensions
 
-/-- Anodyne inclusions are stable under preimage along an isomorphism. -/
-lemma preimage_ι.{w} {X Y : SSet.{w}} (e : X ≅ Y) (B : Y.Subcomplex)
-    (hB : anodyneExtensions B.ι) : anodyneExtensions (B.preimage e.hom).ι := by
-  refine ((anodyneExtensions).arrow_mk_iso_iff (Arrow.isoMk (?_ : _ ≅ _) e.symm ?_)).1 hB
-  · exact
-      { hom := Subcomplex.lift (B.ι ≫ e.inv) (by
-          rintro n _ ⟨b, rfl⟩
-          change e.hom.app n (e.inv.app n b.1) ∈ B.obj n
-          simp [← NatTrans.comp_app_apply])
-        inv := B.fromPreimage e.hom
-        hom_inv_id := by
-          ext n ⟨b, hb⟩
-          apply Subtype.ext
-          change e.hom.app n (e.inv.app n b) = b
-          simp
-        inv_hom_id := by
-          ext n ⟨x, hx⟩
-          apply Subtype.ext
-          change e.inv.app n (e.hom.app n x) = x
-          simp }
-  · rfl
+/-- If `e : X ⟶ Y` and `r : Y ⟶ X` satisfy `e ≫ r = 𝟙 X` and restrict to maps between the
+subcomplexes `A` and `B`, then `A.ι` is a retract of `B.ι`; so it is anodyne if `B.ι` is. -/
+lemma of_retract_ι.{w} {X Y : SSet.{w}} {A : X.Subcomplex} {B : Y.Subcomplex}
+    (hB : anodyneExtensions B.ι) (e : X ⟶ Y) (r : Y ⟶ X) (her : e ≫ r = 𝟙 X)
+    (he : A ≤ B.preimage e) (hr : B ≤ A.preimage r) : anodyneExtensions A.ι :=
+  anodyneExtensions.of_retract
+    { i := Arrow.homMk' (Subcomplex.lift (A.ι ≫ e) (by rintro n _ ⟨x, rfl⟩; exact he n x.2)) e rfl
+      r := Arrow.homMk' (Subcomplex.lift (B.ι ≫ r) (by rintro n _ ⟨y, rfl⟩; exact hr n y.2)) r rfl
+      retract := by
+        ext n x
+        · exact Subtype.ext (congr_arg (fun f ↦ f.app n x.1) her)
+        · exact congr_arg (fun f ↦ f.app n x) her } hB
 
 /-- If `f : A ⟶ B` is anodyne and `X` is a Kan complex, every map `A ⟶ X` extends along `f`. -/
 lemma exists_extension.{w} {A B X : SSet.{w}} {f : A ⟶ B}

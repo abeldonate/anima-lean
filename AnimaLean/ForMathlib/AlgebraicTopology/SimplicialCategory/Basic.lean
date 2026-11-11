@@ -104,16 +104,6 @@ lemma hcomp_map (v w : HSimplex C n) (f : n ⟶ n') :
     exact (congr_arg (mk _ _) (comp_map s t f)).trans (hcomp_mk _ _).symm
   · simp_all [hcomp, dite_eq_right (show (v.map f).tgt ≠ (w.map f).src from h)]
 
-lemma idS_hcomp {A : C} (w : HSimplex C n) (h : w.src = A) : hcomp ⟨A, A, idS A n⟩ w = w := by
-  obtain ⟨B, D, t⟩ := w
-  subst h
-  rw [hcomp_mk, idS_comp]
-
-lemma hcomp_idS {A : C} (w : HSimplex C n) (h : w.tgt = A) : hcomp w ⟨A, A, idS A n⟩ = w := by
-  obtain ⟨B, D, t⟩ := w
-  subst h
-  rw [hcomp_mk, comp_idS]
-
 end HSimplex
 
 /-- A morphism into `sHom A B` built from a natural `HSimplex`-valued function. -/
