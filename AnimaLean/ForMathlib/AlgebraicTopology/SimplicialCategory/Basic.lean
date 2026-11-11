@@ -94,13 +94,15 @@ lemma hcomp_assoc (u v w : HSimplex C n) (h₁ : u.tgt = v.src) (h₂ : v.tgt = 
   subst h₁ h₂
   rw [hcomp_mk, hcomp_mk, hcomp_mk, hcomp_mk, comp_assoc]
 
-lemma hcomp_map (v w : HSimplex C n) (h : v.tgt = w.src) (f : n ⟶ n') :
+lemma hcomp_map (v w : HSimplex C n) (f : n ⟶ n') :
     (hcomp v w).map f = hcomp (v.map f) (w.map f) := by
-  obtain ⟨A, B, s⟩ := v
-  obtain ⟨_, D, t⟩ := w
-  subst h
-  rw [hcomp_mk]
-  exact (congr_arg (mk _ _) (comp_map s t f)).trans (hcomp_mk _ _).symm
+  by_cases h : v.tgt = w.src
+  · obtain ⟨A, B, s⟩ := v
+    obtain ⟨_, D, t⟩ := w
+    subst h
+    rw [hcomp_mk]
+    exact (congr_arg (mk _ _) (comp_map s t f)).trans (hcomp_mk _ _).symm
+  · simp_all [hcomp, dite_eq_right (show (v.map f).tgt ≠ (w.map f).src from h)]
 
 lemma idS_hcomp {A : C} (w : HSimplex C n) (h : w.src = A) : hcomp ⟨A, A, idS A n⟩ w = w := by
   obtain ⟨B, D, t⟩ := w

@@ -199,7 +199,7 @@ lemma valid_map {v : HSimplex C p} (hv : Valid σ₀ h0 hn x v) {p' : SimplexCat
   · exact Or.inl ⟨k, hk, fun t ↦ hx _, (val_map _ f x).symm⟩
   · refine Or.inr ⟨k, h₁, h₂, fun t ↦ hx _, ?_⟩
     rw [contVal, contVal, sub_map, sub_map, val_map, val_map,
-      HSimplex.hcomp_map _ _ (obj_G_eq σ₀ _ _ (pt k) h₂.ne h₁.ne')]
+      HSimplex.hcomp_map]
 
 end Unique
 

@@ -152,7 +152,7 @@ noncomputable def hollowP (h0 : 0 < i) (hn : i < Fin.last (n + 2)) :
     (nerve (a0.{v} n ⟶ am n)).Subcomplex :=
   ((bdry n i).unionProd (SSet.horn.{v} 1 1)).preimage (pathIso n i h0 hn).hom
 
-/-- The inclusion of the hollow cube is anodyne (Kerodon `00LU`): `Λ[1, 1] ↪ Δ[1]` is anodyne,
+/-- The inclusion of the hollow cube is anodyne: `Λ[1, 1] ↪ Δ[1]` is anodyne,
 so is its pushout-product with `bdry ↪ cube`, and anodyne inclusions are stable under preimage
 along an isomorphism. This is what lets the Kan property extend the map on the hollow cube. -/
 lemma anodyne_hollowP (h0 : 0 < i) (hn : i < Fin.last (n + 2)) :
