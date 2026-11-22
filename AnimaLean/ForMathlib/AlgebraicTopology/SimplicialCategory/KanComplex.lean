@@ -23,9 +23,6 @@ abbrev KanComplexCat : Type (u + 1) := FibrantObject SSet.{u}
 
 namespace KanComplexCat
 
-/-- Constructor for `KanComplexCat`. -/
-abbrev of (X : SSet.{u}) [KanComplex X] : KanComplexCat.{u} := FibrantObject.mk X
-
 instance (X : KanComplexCat.{u}) : KanComplex X.obj := X.property
 
 /-- The simplicial category of Kan complexes is locally Kan. -/

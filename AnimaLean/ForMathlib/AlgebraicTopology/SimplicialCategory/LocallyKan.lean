@@ -18,13 +18,6 @@ class LocallyKan : Prop where
 
 attribute [instance] LocallyKan.kanComplex_sHom
 
-lemma locallyKan_iff : LocallyKan C ↔ ∀ X Y : C, KanComplex (sHom X Y) :=
-  ⟨fun h ↦ h.kanComplex_sHom, fun h ↦ ⟨h⟩⟩
-
-/-- A full subcategory of a locally Kan simplicial category is locally Kan. -/
-instance [LocallyKan C] (P : ObjectProperty C) : LocallyKan P.FullSubcategory where
-  kanComplex_sHom X Y := inferInstanceAs (KanComplex (sHom X.obj Y.obj))
-
 end SimplicialCategory
 
 end CategoryTheory

@@ -58,10 +58,51 @@ def addVertex : nerve (pt.{v} n 0 ⟶ pt n (Fin.last _)) ⊗ Δ[1] ⟶
     ext
     rfl
 
-/-- The inclusion of `hollow` is anodyne. For `(a, b) ≠ (0, n + 2)` every chain avoids `0` or
-`n + 2`, so `hollow` is everything. For the hollow cube, `addVertex` exhibits the inclusion as a
-retract of a pushout-product with `Λ[1, 1] ↪ Δ[1]`. This is what lets the Kan property extend
-maps defined on `hollow`. -/
+variable {n i}
+
+/-- Away from `(0, n + 2)`, every chain avoids `0` or `n + 2`, so `hollow` is everything. -/
+lemma hollow_eq_top (h0 : 0 < i) (hn : i < Fin.last (n + 2)) {a b : Th.{v} (n + 2)}
+    (h : ¬ (a = pt n 0 ∧ b = pt n (Fin.last _))) : hollow n i a b = ⊤ :=
+  top_unique fun p x _ ↦ Or.inl <| by
+    by_cases ha : a.as.down = 0
+    · exact ⟨Fin.last _, hn.ne', fun t ht ↦ h ⟨th_ext ha,
+        th_ext (le_antisymm (Fin.le_last _) ((x.obj t).le_right _ ht))⟩⟩
+    · exact ⟨0, h0.ne, fun t ht ↦ ha (Fin.le_zero_iff.1 ((x.obj t).left_le _ ht))⟩
+
+/-- The identity chain `{a}` lies in `hollow`: it avoids a vertex other than `a` and `i`. -/
+lemma id_mem_hollow (a : Th.{v} (n + 2)) (p : SimplexCategoryᵒᵖ) :
+    (eId SSet a).app p PUnit.unit ∈ (hollow n i a a).obj p := by
+  obtain ⟨k, hk, hka⟩ : ∃ k : Fin (n + 3), k ≠ i ∧ k ≠ a.as.down := by
+    by_contra! h
+    have h₀ := h ⟨0, by omega⟩
+    have h₁ := h ⟨1, by omega⟩
+    have h₂ := h ⟨2, by omega⟩
+    simp only [ne_eq, Fin.ext_iff] at h₀ h₁ h₂
+    omega
+  exact Or.inl ⟨k, hk, fun t ht ↦ hka (congr_arg ULift.down (Set.mem_singleton_iff.1 ht))⟩
+
+/-- `hollow` is closed under composition: a composite through a vertex `b` strictly between `a`
+and `c` passes through `b`, and a composite with an identity changes nothing. -/
+lemma union_mem_hollow {a b c : Th.{v} (n + 2)} {p : SimplexCategoryᵒᵖ}
+    {x : (nerve (a ⟶ b)).obj p} {y : (nerve (b ⟶ c)).obj p} (hx : x ∈ (hollow n i a b).obj p)
+    (hy : y ∈ (hollow n i b c).obj p) : union x y ∈ (hollow n i a c).obj p := by
+  by_cases hab : a.as.down = b.as.down
+  · obtain rfl := th_ext hab
+    rwa [chain_eq_id x, id_union]
+  by_cases hbc : b.as.down = c.as.down
+  · obtain rfl := th_ext hbc
+    rwa [chain_eq_id y, union_id]
+  exact Or.inr ⟨b.as.down,
+    lt_of_le_of_ne (show a.as.down ≤ b.as.down from (x.obj 0).left_le _ (x.obj 0).right) hab,
+    lt_of_le_of_ne (show b.as.down ≤ c.as.down from (y.obj 0).left_le _ (y.obj 0).right) hbc,
+    fun t ↦ Or.inr (y.obj t).left⟩
+
+variable (n i)
+
+/-- The inclusion of `hollow` is anodyne (Kerodon `00LV`, with `exists_extension`). For the hollow
+cube, `addVertex` exhibits the inclusion as a retract of a pushout-product with `Λ[1, 1] ↪ Δ[1]`;
+elsewhere `hollow` is everything. This is what lets the Kan property extend maps defined on
+`hollow`. -/
 lemma anodyne_hollow (h0 : 0 < i) (hn : i < Fin.last (n + 2)) (a b : Th.{v} (n + 2)) :
     SSet.anodyneExtensions (hollow n i a b).ι := by
   by_cases h : a = pt n 0 ∧ b = pt n (Fin.last _)
@@ -80,12 +121,7 @@ lemma anodyne_hollow (h0 : 0 < i) (hn : i < Fin.last (n + 2)) (a b : Th.{v} (n +
         rintro (h' | ⟨h', -⟩)
         exacts [h t h', hk (congr_arg ULift.down h')]
       · exact Or.inr ⟨k, h₁, h₂, fun t ↦ Or.inl (h t)⟩
-  · have : hollow n i a b = ⊤ := top_unique fun p x _ ↦ Or.inl <| by
-      by_cases ha : a.as.down = 0
-      · exact ⟨Fin.last _, hn.ne', fun t ht ↦ h ⟨th_ext ha,
-          th_ext (le_antisymm (Fin.le_last _) ((x.obj t).le_right _ ht))⟩⟩
-      · exact ⟨0, h0.ne, fun t ht ↦ ha (Fin.le_zero_iff.1 ((x.obj t).left_le _ ht))⟩
-    rw [this]
+  · rw [hollow_eq_top h0 hn h]
     exact .of_isIso (SSet.Subcomplex.topIso _).hom
 
 end CategoryTheory.CordierPorter
