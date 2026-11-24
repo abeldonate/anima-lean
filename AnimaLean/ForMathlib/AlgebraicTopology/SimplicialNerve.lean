@@ -12,7 +12,9 @@ namespace CategoryTheory
 structure SimplicialCat : Type (max (u + 1) (v + 1)) where
   /-- The type of objects. -/
   α : Type u
+  /-- The underlying category. -/
   [category : Category.{v} α]
+  /-- The simplicial enrichment. -/
   [simplicialCategory : SimplicialCategory α]
 
 namespace SimplicialCat
@@ -60,5 +62,9 @@ def simplicialNerve : SimplicialCat.{v, u} ⥤ SSet.{max u v} where
     exact (EnrichedFunctor.comp_assoc E _ _).symm
 
 end SimplicialCat
+
+/-- The simplicial thickening of `[k]`, whose simplicial functors to `C` are the `k`-simplices of
+the simplicial nerve of `C`. -/
+abbrev Th (k : ℕ) := SimplicialThickening (ULift.{v} (Fin (k + 1)))
 
 end CategoryTheory

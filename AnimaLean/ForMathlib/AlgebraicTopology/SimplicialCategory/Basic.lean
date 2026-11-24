@@ -35,6 +35,10 @@ def comp {A B D : C} (s : (sHom A B).obj n) (t : (sHom B D).obj n) : (sHom A D).
 abbrev idS (A : C) (n : SimplexCategoryᵒᵖ) : (sHom A A).obj n :=
   (eId SSet A).app n PUnit.unit
 
+lemma comp_assoc {A B D E : C} (s : (sHom A B).obj n) (t : (sHom B D).obj n)
+    (w : (sHom D E).obj n) : comp (comp s t) w = comp s (comp t w) :=
+  congr_arg (fun f ↦ f.app n (s, (t, w))) (e_assoc SSet A B D E)
+
 lemma idS_comp {A B : C} (s : (sHom A B).obj n) : comp (idS A n) s = s :=
   congr_arg (fun f ↦ f.app n s) (e_id_comp SSet A B)
 
@@ -49,6 +53,22 @@ lemma comp_map {n' : SimplexCategoryᵒᵖ} {A B D : C} (s : (sHom A B).obj n) (
 lemma idS_map {n' : SimplexCategoryᵒᵖ} (A : C) (f : n ⟶ n') :
     (sHom A A).map f (idS A n) = idS A n' :=
   (NatTrans.naturality_apply (eId SSet A) f PUnit.unit).symm
+
+variable (C) in
+/-- The category of `m`-simplices of a simplicial category `C`: the objects of `C`, and the
+`m`-simplices of `sHom A B` as morphisms `A ⟶ B`. -/
+@[kerodon 00JT]
+structure Level (m : SimplexCategoryᵒᵖ) : Type u where
+  /-- The underlying object of `C`. -/
+  as : C
+
+instance (m : SimplexCategoryᵒᵖ) : Category.{v} (Level C m) where
+  Hom A B := (sHom A.as B.as).obj m
+  id A := idS A.as m
+  comp s t := comp s t
+  id_comp := idS_comp
+  comp_id := comp_idS
+  assoc := comp_assoc
 
 end SimplicialCategory
 

@@ -5,3 +5,4 @@ import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialCategory.LocallyKan
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.Adjunction
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.HollowCube
+import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.PathCategory
