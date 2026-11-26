@@ -54,11 +54,12 @@ lemma idS_map {n' : SimplexCategoryᵒᵖ} (A : C) (f : n ⟶ n') :
     (sHom A A).map f (idS A n) = idS A n' :=
   (NatTrans.naturality_apply (eId SSet A) f PUnit.unit).symm
 
-variable (C) in
+
 /-- The category of `m`-simplices of a simplicial category `C`: the objects of `C`, and the
 `m`-simplices of `sHom A B` as morphisms `A ⟶ B`. -/
 @[kerodon 00JT]
-structure Level (m : SimplexCategoryᵒᵖ) : Type u where
+structure Level (C : Type u) [Category.{v} C] [SimplicialCategory C]
+    (m : SimplexCategoryᵒᵖ) : Type u where
   /-- The underlying object of `C`. -/
   as : C
 

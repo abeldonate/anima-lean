@@ -19,6 +19,7 @@ structure SimplicialCat : Type (max (u + 1) (v + 1)) where
 
 namespace SimplicialCat
 
+-- This line lets Lean infer `Category C.α` and `SimplicialCategory C.α` for `C : SimplicialCat`
 attribute [instance] category simplicialCategory
 
 instance : CoeSort SimplicialCat.{v, u} (Type u) := ⟨α⟩
