@@ -23,6 +23,19 @@ def IsIndecomposable.{v, u} {C : Type u} [Category.{v} C] {A B : C} (f : A ⟶ B
 
 end CategoryTheory
 
+namespace CategoryTheory.SimplicialCat
+
+/-- The path category `Path[n]` of the linear order `[n]`, i.e. the simplicial thickening of
+`[n]`, as a simplicial category. -/
+def th (n : ℕ) : SimplicialCat.{w, w} := ⟨Th.{w} n⟩
+
+/-- Simplicial functors `Path[n] ⥤ C` are the `n`-simplices of `N^hc(C)`: this is the definition
+of the homotopy coherent nerve. -/
+def thHomEquiv (n : ℕ) (C : SimplicialCat.{w, w}) :
+    (th.{w} n ⟶ C) ≃ (simplicialNerve.obj C).obj (Opposite.op ⦋n⦌) := Equiv.refl _
+
+end CategoryTheory.SimplicialCat
+
 namespace SSet
 
 section Description
@@ -35,7 +48,7 @@ abbrev thStart (n : ℕ) : Th.{w} n := ⟨⟨0⟩⟩
 /-- The last vertex of `[n]`. -/
 abbrev thEnd (n : ℕ) : Th.{w} n := ⟨⟨Fin.last n⟩⟩
 
-/-- The set `E(S, m)` of Kerodon Notation 2.4.4.9 (`00L9`): pairs `(σ, I)` of a nondegenerate
+/-- The set `E(S, m)` of Kerodon: pairs `(σ, I)` of a nondegenerate
 `n`-simplex `σ` of `S`, `n > 0`, and a chain `I` of paths from `0` to `n` which starts with
 `{0, n}` and ends with all of `[n]`. (Mathlib orders paths by inclusion, Kerodon by reverse
 inclusion, so Kerodon's `I₀ = [n]` and `Iₘ = {0, n}` become `I 0 = {0, n}` and `I m = [n]`.) -/
@@ -66,24 +79,70 @@ noncomputable def PathGen.toSigma (g : PathGen.{w} S m) :
 noncomputable def vtx (x : S _⦋0⦌) : (thickening.{w}.obj S).α :=
   (((thickeningAdjunction.{w}.unit.app S).app (Opposite.op ⦋0⦌)) x).obj (thStart 0)
 
-/-- **The path category of a simplicial set** (Kerodon Theorem 2.4.4.10, `00LA`): (1) the
-vertices of `S` are the objects of `Path[S]`; (2) each category `Path[S]ₘ` is free; (3) the maps
-`u(σ, I)` identify `E(S, m)` with the indecomposable morphisms of `Path[S]ₘ`. -/
+/-- **The path category of a simplicial set**, objects: the vertices of `S` are the objects of
+`Path[S]`. -/
 @[kerodon 00LA]
-theorem thickening_description :
-    Function.Bijective (vtx.{w} S) ∧ (∀ m, IsFree (Level (thickening.{w}.obj S).α m)) ∧
-      ∀ m, Function.Injective (PathGen.toSigma.{w} S m) ∧
-        Set.range (PathGen.toSigma.{w} S m) = {p | IsIndecomposable p.2.2} := sorry
+theorem vtx_bijective : Function.Bijective (vtx.{w} S) := sorry
 
-/-- **The path category of `[n]`** (Kerodon Lemma 2.4.4.16, `00LF`, for the poset `[n]`): the
-category `Path[n]ₘ` is free, and its indecomposable morphisms are the chains of paths from
-`x < y` starting with `{x, y}`. -/
+/-- **The path category of a simplicial set**, freeness: each category `Path[S]ₘ` is free. -/
+@[kerodon 00LA]
+theorem isFree_level_thickening : IsFree (Level (thickening.{w}.obj S).α m) := sorry
+
+/-- **The path category of a simplicial set**, generators: the maps `u(σ, I)` identify `E(S, m)`
+with the indecomposable morphisms of `Path[S]ₘ`. -/
+@[kerodon 00LA]
+theorem toSigma_injective_and_range :
+    Function.Injective (PathGen.toSigma.{w} S m) ∧
+      Set.range (PathGen.toSigma.{w} S m) = {p | IsIndecomposable p.2.2} := sorry
+
+/-- **The path category of `[n]`**, freeness: the category `Path[n]ₘ` is free. -/
 @[kerodon 00LF]
-theorem th_description (n : ℕ) (m : SimplexCategoryᵒᵖ) :
-    IsFree (Level (Th.{w} n) m) ∧
-      {p : Σ (A B : Level (Th.{w} n) m), A ⟶ B | IsIndecomposable p.2.2} =
-        {p | p.1.as.as.down < p.2.1.as.as.down ∧
-          (p.2.2.obj 0).I = {p.1.as.as, p.2.1.as.as}} := sorry
+theorem isFree_level_th (n : ℕ) : IsFree (Level (Th.{w} n) m) := sorry
+
+/-- **The path category of `[n]`**, generators: the indecomposable morphisms of `Path[n]ₘ` are the
+chains of paths from `x < y` starting with `{x, y}`. -/
+@[kerodon 00LF]
+theorem isIndecomposable_level_th (n : ℕ) :
+    {p : Σ (A B : Level (Th.{w} n) m), A ⟶ B | IsIndecomposable p.2.2} =
+      {p | p.1.as.as.down < p.2.1.as.as.down ∧
+        (p.2.2.obj 0).I = {p.1.as.as, p.2.1.as.as}} := sorry
+
+/-- `Hom(Path[Δⁿ], C) ≅ Hom(Path[n], C)`, naturally in `C`: both are `N^hc_n(C)`. -/
+noncomputable def thickeningStdSimplexNatIso (n : ℕ) :
+    coyoneda.obj (Opposite.op (thickening.obj (stdSimplex.{w}.obj ⦋n⦌))) ≅
+      coyoneda.obj (Opposite.op (SimplicialCat.th.{w} n)) :=
+  NatIso.ofComponents (fun Z =>
+    (((thickeningAdjunction.homEquiv _ _).trans yonedaEquiv).trans
+      (SimplicialCat.thHomEquiv n Z).symm).toIso)
+    (fun {Z Z'} g => by
+      ext f
+      simp [Adjunction.homEquiv_naturality_right, yonedaEquiv_comp]
+      rfl)
+
+/-- **The path category of a simplex**: `Path[Δⁿ] ≅ Path[n]`. Both corepresent `C ↦ N^hc_n(C)`: for
+`Path[Δⁿ]` by the adjunction and Yoneda, for `Path[n]` by the definition of `N^hc`. -/
+@[kerodon 00L6]
+noncomputable def thickeningStdSimplex (n : ℕ) :
+    SimplicialCat.th.{w} n ≅ thickening.obj (stdSimplex.{w}.obj ⦋n⦌) :=
+  (Coyoneda.fullyFaithful.preimageIso (thickeningStdSimplexNatIso n)).unop
+
+theorem thHomEquiv_thickeningStdSimplex_hom (n : ℕ) {C : SimplicialCat.{w, w}}
+    (g : thickening.obj (stdSimplex.{w}.obj ⦋n⦌) ⟶ C) :
+    SimplicialCat.thHomEquiv n C ((thickeningStdSimplex.{w} n).hom ≫ g) =
+      yonedaEquiv (thickeningAdjunction.homEquiv _ _ g) := by
+  have h := ConcreteCategory.congr_hom (NatTrans.congr_app (Coyoneda.fullyFaithful.map_preimage
+    (thickeningStdSimplexNatIso.{w} n).hom) C) g
+  exact h
+
+/-- Under `Path[Δⁿ] ≅ Path[n]`, a simplicial functor `E : Path[n] ⥤ C` corresponds under the
+adjunction to the `n`-simplex `Δⁿ ⟶ N^hc(C)` it defines. -/
+theorem homEquiv_thickeningStdSimplex (n : ℕ) {C : SimplicialCat.{w, w}}
+    (E : SimplicialCat.th.{w} n ⟶ C) :
+    thickeningAdjunction.homEquiv _ _ ((thickeningStdSimplex.{w} n).inv ≫ E) =
+      yonedaEquiv.symm (SimplicialCat.thHomEquiv n C E) := by
+  apply yonedaEquiv.injective
+  rw [Equiv.apply_symm_apply, ← thHomEquiv_thickeningStdSimplex_hom]
+  simp
 
 end Description
 

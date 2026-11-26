@@ -1,5 +1,6 @@
 import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialCategory.KanComplex
-import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve.Quasicategory
+import AnimaLean.ForMathlib.AlgebraicTopology.SimplicialNerve
+import Mathlib.AlgebraicTopology.Quasicategory.Basic
 
 universe u
 
@@ -14,8 +15,6 @@ def anima : SSet.{u + 1} := SimplicialNerve KanComplexCat.{u}
 
 /-- The inf-category of anima is a quasicategory. -/
 @[kerodon 01YY]
-instance : Quasicategory anima.{u} :=
-  inferInstanceAs (Quasicategory (SimplicialNerve KanComplexCat.{u}))
-
+instance : Quasicategory anima.{u} := sorry
 
 end SSet
